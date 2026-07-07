@@ -16,6 +16,27 @@ description: >
 
 Given a URL, return its main content as clean Markdown — headings, links, images, lists, code blocks all preserved.
 
+## Python Interpreter Resolution
+
+**Must resolve the Python path before any command.** The `init.sh` script records the working Python path in `<SKILL_DIR>/.web-fetch.env`. Do NOT blindly use `python3`.
+
+Priority:
+1. Read `<SKILL_DIR>/.web-fetch.env` and use `WEB_FETCH_PYTHON` if the file exists
+2. Otherwise, run init first: `bash <SKILL_DIR>/scripts/init.sh`
+3. If init fails, fall back to system `python3`
+
+Resolve once in Bash and reuse:
+
+```bash
+SKILL_DIR="<SKILL_DIR>"
+if [[ -f "$SKILL_DIR/.web-fetch.env" ]]; then
+    PYTHON=$(grep WEB_FETCH_PYTHON "$SKILL_DIR/.web-fetch.env" | cut -d= -f2)
+fi
+[[ -z "$PYTHON" ]] && PYTHON=python3
+```
+
+All subsequent `fetch.py` / `init.sh` commands must use this resolved `$PYTHON`, never a bare `python3`.
+
 ## Skill Invocation
 
 When this skill is invoked, inspect the `args`:
@@ -61,13 +82,15 @@ URL
 
 ### Scrapling script
 
+Always use the resolved `$PYTHON` (see above), not bare `python3`.
+
 ```bash
-python3 <SKILL_DIR>/scripts/fetch.py "<url>" [max_chars] [--stealth] [--cloak]
+$PYTHON <SKILL_DIR>/scripts/fetch.py "<url>" [max_chars] [--stealth] [--cloak]
 ```
 
 `<SKILL_DIR>` is the directory where this SKILL.md lives. Resolve it before calling the script.
 
-> **Model instruction:** If the skill `args` is empty, starts with `init`, or equals `setup`, run `<SKILL_DIR>/scripts/init.sh`. Otherwise run `fetch.py` with the provided URL/flags.
+> **Model instruction:** If the skill `args` is empty, starts with `init`, or equals `setup`, run `<SKILL_DIR>/scripts/init.sh`. Otherwise run `fetch.py` with the provided URL/flags, using the resolved `$PYTHON` from `.web-fetch.env`.
 
 The script has three modes built in:
 - **Default (fast):** HTTP fetch, ~1-3s, works for most sites
@@ -100,19 +123,19 @@ Use this table to pick the right mode on the first call:
 
 ```bash
 # Basic — auto-selects fast, stealth, or cloak
-python3 <SKILL_DIR>/scripts/fetch.py "https://sspai.com/post/73145"
+$PYTHON <SKILL_DIR>/scripts/fetch.py "https://sspai.com/post/73145"
 
 # Force stealth for known JS-heavy sites
-python3 <SKILL_DIR>/scripts/fetch.py "https://mp.weixin.qq.com/s/xxx" --stealth
+$PYTHON <SKILL_DIR>/scripts/fetch.py "https://mp.weixin.qq.com/s/xxx" --stealth
 
 # Force cloak for sites with advanced bot protection
-python3 <SKILL_DIR>/scripts/fetch.py "https://example.com/protected" --cloak
+$PYTHON <SKILL_DIR>/scripts/fetch.py "https://example.com/protected" --cloak
 
 # Limit output to 15000 characters (default: 30000)
-python3 <SKILL_DIR>/scripts/fetch.py "https://example.com/article" 15000
+$PYTHON <SKILL_DIR>/scripts/fetch.py "https://example.com/article" 15000
 
 # JSON output with metadata (url, mode, selector, content_length)
-python3 <SKILL_DIR>/scripts/fetch.py "https://example.com" --json
+$PYTHON <SKILL_DIR>/scripts/fetch.py "https://example.com" --json
 ```
 
 ## Quick Start
