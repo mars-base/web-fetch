@@ -55,7 +55,7 @@ Run once to install `scrapling`, `html2text`, `cloakbrowser` and write `.web-fet
 ### Fetch command
 
 ```bash
-python3 <SKILL_DIR>/scripts/fetch.py "<url>" [max_chars] [--stealth] [--cloak]
+$PYTHON <SKILL_DIR>/scripts/fetch.py "<url>" [max_chars] [--stealth] [--cloak]
 ```
 
 ## Extraction Strategy
