@@ -18,18 +18,18 @@ Given a URL, return its main content as clean Markdown — headings, links, imag
 
 No initialization step needed. Works on Linux, macOS, and Windows.
 
-## Recommended: Replace Built-in WebFetch
+## Recommended: Replace Built-in Fetch & WebFetch
 
-To make Claude Code always use `/web-fetch` instead of the built-in `WebFetch` tool, add the following to your `~/.claude/CLAUDE.md`:
+To make Claude Code always use `/web-fetch` instead of the built-in `Fetch` and `WebFetch` tools, add the following to your `~/.claude/CLAUDE.md`:
 
 ```markdown
 ## Web Fetch
 
-Always use the `/web-fetch` skill for fetching web content — do not use the built-in WebFetch tool.
+Always use the `/web-fetch` skill for fetching web content — do not use the built-in Fetch or WebFetch tools.
 `/web-fetch` supports anti-scraping bypass, JS rendering, and CloakBrowser for higher quality output.
 ```
 
-This ensures every project automatically prefers `/web-fetch` over the default tool.
+This ensures every project automatically prefers `/web-fetch` over the default tools.
 
 ## Skill Invocation
 
