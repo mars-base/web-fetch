@@ -59,6 +59,17 @@ Then invoke it with:
 
 > **Tip:** If the built-in `WebFetch` tool fails (blocked by anti-scraping, JS rendering, etc.), use `/web-fetch` skill as a drop-in replacement — it supports anti-bot bypass, JS rendering, and CloakBrowser.
 
+### Configure global CLAUDE.md (recommended)
+
+To make Claude Code always use `/web-fetch` instead of the built-in `WebFetch` tool, add the following to your `~/.claude/CLAUDE.md`:
+
+```markdown
+## Web Fetch
+
+Always use the `/web-fetch` skill for fetching web content — do not use the built-in WebFetch tool.
+`/web-fetch` supports anti-scraping bypass, JS rendering, and CloakBrowser for higher quality output.
+```
+
 ## Domain routing tips
 
 | Domain | Suggested command |
