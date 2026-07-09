@@ -74,7 +74,7 @@ Always use the `/web-fetch` skill for fetching web content — do not use the bu
 
 | Domain | Suggested command |
 |--------|-------------------|
-| `mp.weixin.qq.com` | `--stealth` |
+| `mp.weixin.qq.com` | default (auto → cloak) |
 | `zhuanlan.zhihu.com` | `--stealth` |
 | `juejin.cn` | `--stealth` |
 | `sspai.com`, `blog.csdn.net`, `ruanyifeng.com` | default (fast) |

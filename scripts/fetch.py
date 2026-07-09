@@ -202,9 +202,10 @@ def fetch(url, max_chars=30000, stealth=False, cloak=False):
     """
     Main entry point. Fetches URL and returns (markdown, selector, mode).
     Strategy:
-      1. fast (HTTP) — unless stealth or cloak is forced
-      2. stealth (Scrapling headless) — auto-fallback when fast result is too short
-      3. cloak (CloakBrowser) — final fallback when stealth also fails
+      1. cloak (CloakBrowser) — for WeChat, which blocks Scrapling fast/stealth
+      2. fast (HTTP) — unless stealth or cloak is forced
+      3. stealth (Scrapling headless) — auto-fallback when fast result is too short
+      4. cloak (CloakBrowser) — final fallback when stealth also fails
     """
     if cloak:
         md, selector = fetch_cloakbrowser(url, max_chars)
@@ -213,6 +214,11 @@ def fetch(url, max_chars=30000, stealth=False, cloak=False):
     if stealth:
         md, selector = fetch_stealth(url, max_chars)
         return md, selector, "stealth"
+
+    # WeChat aggressively blocks Scrapling fast/stealth modes — go straight to cloak.
+    if "mp.weixin.qq.com" in url:
+        md, selector = fetch_cloakbrowser(url, max_chars)
+        return md, selector, "cloak(wechat-direct)"
 
     # Try fast mode first
     md, selector = fetch_fast(url, max_chars)
