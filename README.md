@@ -57,6 +57,8 @@ Then invoke it with:
 /web-fetch https://example.com/article
 ```
 
+> **Tip:** If the built-in `WebFetch` tool fails (blocked by anti-scraping, JS rendering, etc.), use `/web-fetch` skill as a drop-in replacement — it supports anti-bot bypass, JS rendering, and CloakBrowser.
+
 ## Domain routing tips
 
 | Domain | Suggested command |
