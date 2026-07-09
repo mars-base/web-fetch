@@ -4,12 +4,13 @@ Universal web content extractor (Scrapling + html2text).
 Returns clean Markdown with headings, links, images, lists, and code blocks.
 
 Usage:
-  python3 fetch.py <url> [max_chars] [--stealth]
+  python3 fetch.py <url> [max_chars] [--stealth] [--cloak] [--json]
 
 Modes:
   (default)   Fast HTTP fetch via Fetcher — works for most sites (~1-3s)
   --stealth   Headless browser via StealthyFetcher — for JS-rendered or
               anti-scraping sites like WeChat, Zhihu, Juejin (~5-15s)
+  --cloak     CloakBrowser — stealth Chromium for advanced bot detection
 
 Examples:
   python3 fetch.py https://sspai.com/post/73145
@@ -22,19 +23,6 @@ import os
 import re
 import json
 import logging
-
-
-def resolve_python():
-    """Use the Python path recorded by init.sh, otherwise fall back to sys.executable."""
-    skill_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    config_file = os.path.join(skill_dir, ".web-fetch.env")
-    if os.path.exists(config_file):
-        with open(config_file) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("WEB_FETCH_PYTHON="):
-                    return line.split("=", 1)[1]
-    return sys.executable
 
 
 def check_dependencies():
@@ -50,11 +38,10 @@ def check_dependencies():
         missing.append("html2text")
 
     if missing:
-        python = resolve_python()
         print(
             f"Error: missing dependencies: {', '.join(missing)}\n"
             f"Install with:\n"
-            f"  {python} -m pip install {' '.join(missing)}",
+            f"  pip install {' '.join(missing)}",
             file=sys.stderr,
         )
         sys.exit(1)

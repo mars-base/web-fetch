@@ -20,24 +20,11 @@ alternative when neither browser-based method is available.
 
 ## Install
 
-Clone the repo and run the init script once:
-
 ```bash
 git clone https://github.com/mars-base/web-fetch.git
 cd web-fetch
-bash scripts/init.sh [python_path]
+pip install scrapling html2text cloakbrowser
 ```
-
-If you don't provide a Python path, init prefers `/srv/venv/bin/python3` and falls
-back to `python3`.
-
-The init script installs the required packages:
-
-- `scrapling`
-- `html2text`
-- `cloakbrowser`
-
-and writes `.web-fetch.env` with the selected Python interpreter.
 
 ## Usage
 
@@ -68,7 +55,6 @@ Then invoke it with:
 
 ```
 /web-fetch https://example.com/article
-/web-fetch init
 ```
 
 ## Domain routing tips
@@ -87,10 +73,8 @@ Then invoke it with:
 web-fetch/
 ├── SKILL.md              # Claude Code skill definition
 ├── README.md             # This file
-├── scripts/
-│   ├── init.sh           # Dependency/setup helper
-│   └── fetch.py          # Main fetch/extract script
-└── .web-fetch.env        # Generated Python path config
+└── scripts/
+    └── fetch.py          # Main fetch/extract script
 ```
 
 ## License
