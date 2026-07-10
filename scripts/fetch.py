@@ -250,6 +250,11 @@ def fetch(url, max_chars=30000, stealth=False, cloak=False):
 
 
 def main():
+    # Force UTF-8 output on Windows (default codepage can't encode Chinese chars)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
     if len(sys.argv) < 2:
         print(
             "Usage: python3 fetch.py <url> [max_chars] [--stealth] [--cloak]\n"
