@@ -129,7 +129,7 @@ First use only — the script checks and tells you if anything is missing:
 pip install scrapling html2text cloakbrowser
 ```
 
-If on system-managed Python (macOS/Linux), add `--break-system-packages` or use a venv.
+If on system-managed Python (macOS/Linux), add `--break-system-packages` or use a venv. On Windows, install Python from the Microsoft Store or ensure `python3` is available in PATH.
 
 ## Failure Rules
 

@@ -26,6 +26,8 @@ cd web-fetch
 pip install scrapling html2text cloakbrowser
 ```
 
+On Windows, install Python from the Microsoft Store or ensure `python3` is available in PATH. On macOS/Linux with system-managed Python, add `--break-system-packages` or use a venv.
+
 ## Usage
 
 ### As a script
