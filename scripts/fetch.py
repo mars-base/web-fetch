@@ -27,24 +27,48 @@ import logging
 
 def check_dependencies():
     """Check if required packages are installed and provide install instructions."""
-    missing = []
+    required = []
+    optional = []
+
     try:
         import scrapling  # noqa: F401
     except ImportError:
-        missing.append("scrapling")
+        required.append("scrapling")
     try:
         import html2text  # noqa: F401
     except ImportError:
-        missing.append("html2text")
+        required.append("html2text")
 
-    if missing:
+    try:
+        import cloakbrowser  # noqa: F401
+    except ImportError:
+        optional.append("cloakbrowser")
+    try:
+        import curl_cffi  # noqa: F401
+    except ImportError:
+        optional.append("curl_cffi")
+    try:
+        import browserforge  # noqa: F401
+    except ImportError:
+        optional.append("browserforge")
+
+    if required:
         print(
-            f"Error: missing dependencies: {', '.join(missing)}\n"
+            f"Error: missing required dependencies: {', '.join(required)}\n"
             f"Install with:\n"
-            f"  python3 -m pip install {' '.join(missing)}",
+            f"  python3 -m pip install {' '.join(required)}",
             file=sys.stderr,
         )
         sys.exit(1)
+
+    if optional:
+        print(
+            f"Warning: missing optional dependencies: {', '.join(optional)}\n"
+            f"Some features may not work (e.g. CloakBrowser mode, stealth enhancement).\n"
+            f"Install with:\n"
+            f"  python3 -m pip install {' '.join(optional)}",
+            file=sys.stderr,
+        )
 
 
 def fix_lazy_images(html_raw):
