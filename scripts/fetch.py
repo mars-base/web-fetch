@@ -41,7 +41,7 @@ def check_dependencies():
         print(
             f"Error: missing dependencies: {', '.join(missing)}\n"
             f"Install with:\n"
-            f"  pip install {' '.join(missing)}",
+            f"  python3 -m pip install {' '.join(missing)}",
             file=sys.stderr,
         )
         sys.exit(1)

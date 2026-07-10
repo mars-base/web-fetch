@@ -23,7 +23,7 @@ alternative when neither browser-based method is available.
 ```bash
 git clone https://github.com/mars-base/web-fetch.git
 cd web-fetch
-pip install scrapling html2text cloakbrowser
+python3 -m pip install scrapling html2text cloakbrowser curl_cffi browserforge
 ```
 
 On Windows, **install Python from the Microsoft Store** (`python3` is available out of the box). Alternatively, ensure `python3` is available in PATH. On macOS/Linux with system-managed Python, add `--break-system-packages` or use a venv.

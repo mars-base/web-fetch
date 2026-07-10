@@ -126,7 +126,7 @@ python3 <SKILL_DIR>/scripts/fetch.py "https://example.com" --json
 First use only — the script checks and tells you if anything is missing:
 
 ```bash
-pip install scrapling html2text cloakbrowser
+python3 -m pip install scrapling html2text cloakbrowser curl_cffi browserforge
 ```
 
 If on system-managed Python (macOS/Linux), add `--break-system-packages` or use a venv. On Windows, install Python from the Microsoft Store or ensure `python3` is available in PATH.
