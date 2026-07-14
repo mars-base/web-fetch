@@ -27,6 +27,10 @@ To make Claude Code always use `/web-fetch` instead of the built-in `Fetch` and 
 
 Always use the `/web-fetch` skill for fetching web content — do not use the built-in Fetch or WebFetch tools.
 `/web-fetch` supports anti-scraping bypass, JS rendering, and CloakBrowser for higher quality output.
+
+Use `/web-fetch` together with `/web-search`:
+- `/web-search` finds relevant links
+- `/web-fetch` extracts full article content from selected links
 ```
 
 This ensures every project automatically prefers `/web-fetch` over the default tools.
