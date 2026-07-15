@@ -4,7 +4,7 @@ Universal web content extractor (Scrapling + html2text).
 Returns clean Markdown with headings, links, images, lists, and code blocks.
 
 Usage:
-  python3 fetch.py <url> [max_chars] [--stealth] [--cloak] [--json]
+  python3 fetch.py <url> [max_chars] [--stealth] [--cloak] [--json] [--proxy PROXY]
 
 Modes:
   (default)   Fast HTTP fetch via Fetcher — works for most sites (~1-3s)
@@ -12,10 +12,16 @@ Modes:
               anti-scraping sites like WeChat, Zhihu, Juejin (~5-15s)
   --cloak     CloakBrowser — stealth Chromium for advanced bot detection
 
+Proxy:
+  --proxy PROXY  Proxy URL (e.g. "http://127.0.0.1:8118").
+                  If not set, reads from HTTPS_PROXY / HTTP_PROXY /
+                  https_proxy / http_proxy / all_proxy env vars.
+
 Examples:
   python3 fetch.py https://sspai.com/post/73145
   python3 fetch.py https://mp.weixin.qq.com/s/xxx 30000 --stealth
   python3 fetch.py https://zhuanlan.zhihu.com/p/12345 --stealth
+  python3 fetch.py https://example.com --proxy http://127.0.0.1:8118
 """
 
 import sys
@@ -158,7 +164,7 @@ def _suppress_scrapling_logs():
     logging.getLogger("scrapling").setLevel(logging.CRITICAL)
 
 
-def fetch_fast(url, max_chars=30000, timeout=15):
+def fetch_fast(url, max_chars=30000, timeout=15, proxy=None):
     """
     Fast HTTP fetch — no JavaScript execution.
     Works for most blogs and static sites.
@@ -166,11 +172,14 @@ def fetch_fast(url, max_chars=30000, timeout=15):
     from scrapling.fetchers import Fetcher
     _suppress_scrapling_logs()
 
-    page = Fetcher().get(url, timeout=timeout, stealthy_headers=True)
+    kwargs = {"timeout": timeout, "stealthy_headers": True}
+    if proxy:
+        kwargs["proxy"] = proxy
+    page = Fetcher().get(url, **kwargs)
     return extract_content(page, url, max_chars)
 
 
-def fetch_stealth(url, max_chars=30000, timeout=30000):
+def fetch_stealth(url, max_chars=30000, timeout=30000, proxy=None):
     """
     Headless browser fetch — executes JavaScript, bypasses anti-scraping.
     Required for: WeChat articles, Zhihu, Juejin, and other JS-rendered pages.
@@ -179,23 +188,26 @@ def fetch_stealth(url, max_chars=30000, timeout=30000):
     from scrapling.fetchers import StealthyFetcher
     _suppress_scrapling_logs()
 
-    page = StealthyFetcher().fetch(
-        url,
-        headless=True,
-        network_idle=True,
-        timeout=timeout,
-    )
+    kwargs = {"headless": True, "network_idle": True, "timeout": timeout}
+    if proxy:
+        kwargs["proxy"] = proxy
+
+    page = StealthyFetcher().fetch(url, **kwargs)
     return extract_content(page, url, max_chars)
 
 
-def fetch_cloakbrowser(url, max_chars=30000, timeout=60000):
+def fetch_cloakbrowser(url, max_chars=30000, timeout=60000, proxy=None):
     """
     CloakBrowser fallback — stealth Chromium with anti-detection patches.
     Use when both Scrapling modes fail or are blocked by advanced bot detection.
     """
     import cloakbrowser
 
-    browser = cloakbrowser.launch(headless=True)
+    launch_kwargs = {"headless": True}
+    if proxy:
+        launch_kwargs["proxy"] = {"server": proxy}
+
+    browser = cloakbrowser.launch(**launch_kwargs)
     try:
         page = browser.new_page()
         page.goto(url, wait_until="networkidle", timeout=timeout)
@@ -222,7 +234,22 @@ def fetch_cloakbrowser(url, max_chars=30000, timeout=60000):
         browser.close()
 
 
-def fetch(url, max_chars=30000, stealth=False, cloak=False):
+def get_proxy(cli_proxy=None):
+    """
+    Resolve proxy from CLI arg or environment variables.
+    Priority: --proxy > HTTPS_PROXY > HTTP_PROXY > https_proxy > http_proxy > all_proxy
+    Returns None if no proxy is configured.
+    """
+    if cli_proxy:
+        return cli_proxy
+    for var in ("HTTPS_PROXY", "HTTP_PROXY", "https_proxy", "http_proxy", "all_proxy"):
+        val = os.environ.get(var)
+        if val:
+            return val
+    return None
+
+
+def fetch(url, max_chars=30000, stealth=False, cloak=False, proxy=None):
     """
     Main entry point. Fetches URL and returns (markdown, selector, mode).
     Strategy:
@@ -230,27 +257,31 @@ def fetch(url, max_chars=30000, stealth=False, cloak=False):
       2. fast (HTTP) — unless stealth or cloak is forced
       3. stealth (Scrapling headless) — auto-fallback when fast result is too short
       4. cloak (CloakBrowser) — final fallback when stealth also fails
+
+    proxy: optional proxy URL string (e.g. "http://127.0.0.1:8118").
+           If not set, reads from HTTPS_PROXY / HTTP_PROXY / all_proxy env vars.
     """
+    resolved_proxy = get_proxy(proxy)
     if cloak:
-        md, selector = fetch_cloakbrowser(url, max_chars)
+        md, selector = fetch_cloakbrowser(url, max_chars, proxy=resolved_proxy)
         return md, selector, "cloak"
 
     if stealth:
-        md, selector = fetch_stealth(url, max_chars)
+        md, selector = fetch_stealth(url, max_chars, proxy=resolved_proxy)
         return md, selector, "stealth"
 
     # WeChat aggressively blocks Scrapling fast/stealth modes — go straight to cloak.
     if "mp.weixin.qq.com" in url:
-        md, selector = fetch_cloakbrowser(url, max_chars)
+        md, selector = fetch_cloakbrowser(url, max_chars, proxy=resolved_proxy)
         return md, selector, "cloak(wechat-direct)"
 
     # Try fast mode first
-    md, selector = fetch_fast(url, max_chars)
+    md, selector = fetch_fast(url, max_chars, proxy=resolved_proxy)
 
     # If fast mode got barely any content, the page likely needs JS rendering
     if len(md) < MIN_CONTENT_LENGTH:
         try:
-            md_stealth, sel_stealth = fetch_stealth(url, max_chars)
+            md_stealth, sel_stealth = fetch_stealth(url, max_chars, proxy=resolved_proxy)
             if len(md_stealth) > len(md):
                 return md_stealth, sel_stealth, "stealth(auto-fallback)"
         except Exception:
@@ -264,7 +295,7 @@ def fetch(url, max_chars=30000, stealth=False, cloak=False):
 
         # Final fallback: CloakBrowser
         try:
-            md_cloak, sel_cloak = fetch_cloakbrowser(url, max_chars)
+            md_cloak, sel_cloak = fetch_cloakbrowser(url, max_chars, proxy=resolved_proxy)
             if len(md_cloak) > len(md):
                 return md_cloak, sel_cloak, "cloak(auto-fallback)"
         except Exception:
@@ -281,13 +312,15 @@ def main():
 
     if len(sys.argv) < 2:
         print(
-            "Usage: python3 fetch.py <url> [max_chars] [--stealth] [--cloak]\n"
+            "Usage: python3 fetch.py <url> [max_chars] [--stealth] [--cloak] [--json] [--proxy PROXY]\n"
             "\n"
             "Options:\n"
             "  max_chars   Maximum output characters (default: 30000)\n"
             "  --stealth   Use Scrapling headless browser for JS-rendered pages\n"
             "  --cloak     Use CloakBrowser (anti-detection Chromium)\n"
-            "  --json      Output as JSON with metadata\n",
+            "  --json      Output as JSON with metadata\n"
+            "  --proxy     Proxy URL (e.g. 'http://127.0.0.1:8118').\n"
+            "              Also reads from HTTPS_PROXY / HTTP_PROXY env vars.\n",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -298,11 +331,23 @@ def main():
     stealth = "--stealth" in args
     cloak = "--cloak" in args
     json_output = "--json" in args
+
+    # Parse --proxy VALUE
+    proxy = None
+    try:
+        proxy_idx = args.index("--proxy")
+        proxy = args[proxy_idx + 1]
+        # Remove --proxy and its value from args
+        args.pop(proxy_idx)      # value
+        args.pop(proxy_idx)      # flag
+    except (ValueError, IndexError):
+        pass
+
     args = [a for a in args if not a.startswith("--")]
     max_chars = int(args[0]) if args else 30000
 
     try:
-        md, selector, mode = fetch(url, max_chars, stealth=stealth, cloak=cloak)
+        md, selector, mode = fetch(url, max_chars, stealth=stealth, cloak=cloak, proxy=proxy)
 
         if json_output:
             result = {

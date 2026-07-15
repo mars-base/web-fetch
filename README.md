@@ -17,6 +17,7 @@ alternative when neither browser-based method is available.
 - **Auto fallback** — fast → stealth → cloak without manual intervention
 - **Clean Markdown output** — selectors for most blog/article platforms
 - **JSON output** — metadata including URL, mode, selector, content length
+- **Proxy support** — `--proxy` flag or auto-detect from `HTTPS_PROXY`/`HTTP_PROXY` env vars
 
 ## Install
 
@@ -43,6 +44,9 @@ python3 scripts/fetch.py "https://example.com/protected" --cloak
 
 # Limit output and return JSON
 python3 scripts/fetch.py "https://example.com" 15000 --json
+
+# Use a proxy (also reads from HTTPS_PROXY / HTTP_PROXY env vars)
+python3 scripts/fetch.py "https://example.com" --proxy http://127.0.0.1:8118
 ```
 
 ### As a Claude Code skill

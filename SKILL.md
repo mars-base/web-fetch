@@ -42,10 +42,13 @@ When this skill is invoked, treat `args` as a URL (and optional flags) and run `
 ### Fetch command
 
 ```bash
-python3 <SKILL_DIR>/scripts/fetch.py "<url>" [max_chars] [--stealth] [--cloak] [--json]
+python3 <SKILL_DIR>/scripts/fetch.py "<url>" [max_chars] [--stealth] [--cloak] [--json] [--proxy PROXY]
 ```
 
 `<SKILL_DIR>` is the directory where this SKILL.md lives.
+
+> **Proxy:** Pass `--proxy http://host:port` or set `HTTPS_PROXY`/`HTTP_PROXY` env vars.
+> The script auto-detects proxy from environment variables if `--proxy` is not set.
 
 ## Extraction Strategy
 
@@ -72,7 +75,7 @@ URL
 ### Scrapling script
 
 ```bash
-python3 <SKILL_DIR>/scripts/fetch.py "<url>" [max_chars] [--stealth] [--cloak] [--json]
+python3 <SKILL_DIR>/scripts/fetch.py "<url>" [max_chars] [--stealth] [--cloak] [--json] [--proxy PROXY]
 ```
 
 `<SKILL_DIR>` is the directory where this SKILL.md lives.
@@ -123,6 +126,9 @@ python3 <SKILL_DIR>/scripts/fetch.py "https://example.com/article" 15000
 
 # JSON output with metadata (url, mode, selector, content_length)
 python3 <SKILL_DIR>/scripts/fetch.py "https://example.com" --json
+
+# Use a proxy (also reads from HTTPS_PROXY / HTTP_PROXY env vars)
+python3 <SKILL_DIR>/scripts/fetch.py "https://example.com" --proxy http://127.0.0.1:8118
 ```
 
 ## Install Dependencies
